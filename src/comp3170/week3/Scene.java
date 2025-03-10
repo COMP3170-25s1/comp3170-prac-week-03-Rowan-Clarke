@@ -26,10 +26,13 @@ public class Scene {
 	private int vertexBuffer;
 	private int[] indices;
 	private int indexBuffer;
+	
 	private Vector3f[] colours;
 	private int colourBuffer;
 
 	private Shader shader;
+	
+	private Matrix4f matrix;
 
 	public Scene() {
 
@@ -77,6 +80,7 @@ public class Scene {
 			// @formatter:on
 
 		indexBuffer = GLBuffers.createIndexBuffer(indices);
+		matrix = translationMatrix(1,1, matrix);
 
 	}
 
@@ -86,6 +90,7 @@ public class Scene {
 		// set the attributes
 		shader.setAttribute("a_position", vertexBuffer);
 		shader.setAttribute("a_colour", colourBuffer);
+		shader.setUniform("u_modelMatrix", matrix);
 
 		// draw using index buffer
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
@@ -133,9 +138,17 @@ public class Scene {
 	 */
 
 	public static Matrix4f rotationMatrix(float angle, Matrix4f dest) {
-
-		// TODO: Your code here
-
+		dest.identity();
+		
+		//	   [ m00 m10 m20 m30 ]
+		// T = [ m01 m11 m21 m31 ]
+		//     [ m02 m12 m22 m32 ]
+		//     [ m03 m13 m23 m33 ]
+		
+		dest.m00((float)Math.cos(angle));
+		dest.m01((float)Math.sin(angle));
+		dest.m10((float)-Math.sin(angle));
+		dest.m11((float)Math.cos(angle));
 		return dest;
 	}
 
@@ -151,8 +164,15 @@ public class Scene {
 
 	public static Matrix4f scaleMatrix(float sx, float sy, Matrix4f dest) {
 
-		// TODO: Your code here
-
+		dest.identity();
+		
+		//	   [ m00 m10 m20 m30 ]
+		// T = [ m01 m11 m21 m31 ]
+		//     [ m02 m12 m22 m32 ]
+		//     [ m03 m13 m23 m33 ]
+		
+		dest.m00(sx);
+		dest.m11(sy);
 		return dest;
 	}
 
