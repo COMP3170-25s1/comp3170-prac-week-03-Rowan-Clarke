@@ -8,7 +8,7 @@ public class Scene {
 	
 	public Scene() {
 		
-		plane = new Plane(0, 0);
+		plane = new Plane(-0.5f, 0.6f);
 	}
 	
 	public void init() {

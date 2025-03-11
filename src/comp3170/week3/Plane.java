@@ -80,8 +80,11 @@ public class Plane {
 		indices = new int[] {  
 			0, 1, 2, // left triangle
 			0, 1, 3, // right triangle
-			};
-			// @formatter:on
+		};
+		// @formatter:on
+
+		indexBuffer = GLBuffers.createIndexBuffer(indices);
+		
 		
 		modelMatrix = new Matrix4f();
 		transMatrix = new Matrix4f();
@@ -89,17 +92,18 @@ public class Plane {
 		scalMatrix = new Matrix4f();
 		
 		modelMatrix.identity();
-
-		indexBuffer = GLBuffers.createIndexBuffer(indices);
 		
 		translationMatrix(x, y, transMatrix);
 		rotationMatrix(TAU/3, rotMatrix);
 		scaleMatrix(0.1f,0.1f, scalMatrix);
+		
+		//modelMatrix.mul(rotMatrix).mul(transMatrix).mul(scalMatrix);
+		modelMatrix.mul(transMatrix).mul(rotMatrix).mul(scalMatrix);
 	}
 	
-	private final float MOVEMENT_SPEED = 1.0f;
-	private final float ROTATION_SPEED = TAU/12;
-	private final float SCALE_SPEED = 0.5f;
+	private final float MOVEMENT_SPEED = 10.0f;
+	private final float ROTATION_SPEED = TAU/4;
+	private final float SCALE_SPEED = 0.1f;
 	
 	public void update(float deltaTime) {
 
@@ -120,9 +124,20 @@ public class Plane {
 		
 //		modelMatrix.mulLocal(transMatrix).mul(rotMatrix); // M = T*M*R
 		
-		translationMatrix(movement, 0.0f, transMatrix);
+		translationMatrix(0.0f, movement, transMatrix);
 		rotationMatrix(rotation, rotMatrix);
 		scaleMatrix(scale, scale, scalMatrix);
+		
+		//modelMatrix.mul(transMatrix).mul(rotMatrix); // M = M*T*R
+		//M = R * S * T (local coordinates)
+		//M = T * R * S (global coordinates)
+		
+		//modelMatrix.mul(rotMatrix).mul(transMatrix).mul(scalMatrix);
+		modelMatrix.mul(rotMatrix).mul(transMatrix);
+
+		
+		//modelMatrix.mul(rotMatrix).mul(scalMatrix).mul(transMatrix); // M = M*T*R
+
 		
 	}
 
@@ -154,7 +169,7 @@ public class Plane {
 
 	public static Matrix4f translationMatrix(float tx, float ty, Matrix4f dest) {
 		// clear the matrix to the identity matrix
-		dest.identity();
+		//dest.identity();
 
 		//     [ 1 0 0 tx ]
 		// T = [ 0 1 0 ty ]
@@ -180,7 +195,7 @@ public class Plane {
 	 */
 
 	public static Matrix4f rotationMatrix(float angle, Matrix4f dest) {
-		dest.identity();
+		//dest.identity();
 		
 		//	   [ m00 m10 m20 m30 ]
 		// T = [ m01 m11 m21 m31 ]
@@ -206,7 +221,7 @@ public class Plane {
 
 	public static Matrix4f scaleMatrix(float sx, float sy, Matrix4f dest) {
 
-		dest.identity();
+		//dest.identity();
 		
 		//	   [ m00 m10 m20 m30 ]
 		// T = [ m01 m11 m21 m31 ]
