@@ -1,5 +1,6 @@
 package comp3170.week3;
 
+import static comp3170.Math.TAU;
 import static org.lwjgl.opengl.GL11.glViewport;
 import static org.lwjgl.opengl.GL41.*;
 
@@ -23,6 +24,9 @@ public class Week3 implements IWindowListener {
 	private int height = 800;
 	private Scene scene;
 	
+	private long oldTime;
+
+	
 	public Week3() throws OpenGLException  {
 		
 		// create window with title, size, and a listener (this)
@@ -43,10 +47,22 @@ public class Week3 implements IWindowListener {
 		
 		// create the scene
 		scene = new Scene();
+		oldTime = System.currentTimeMillis();
 		
 	}
 
 
+	
+	
+	public void update() {
+		long time = System.currentTimeMillis();
+		float deltaTime = (time - oldTime) / 1000f;
+		oldTime = time;
+		scene.update(deltaTime);
+		
+		
+	}
+	
 	@Override
 	public void draw() {
 		// update the scene
@@ -59,19 +75,6 @@ public class Week3 implements IWindowListener {
 	    
 	}
 	
-	private static final float TRANSLATION_SPEED = 1;
-	private static final float ROTATION_SPEED = TAU / 6;
-	private long oldTime = 0;
-	private void update() {
-		
-		// calculate seconds since last frame
-		long time = System.currentTimeMillis();
-		float deltaTime = (time - oldTime) / 1000f;
-		oldTime = time;
-		// scale updates by deltaTime
-		object.translate(TRANSLATION_SPEED * deltaTime, 0);
-		object.rotate(ROTATION_SPEED * deltaTime);
-	}
 	
 	@Override
 	public void resize(int width, int height) {
