@@ -2,7 +2,8 @@
 
 in vec4 a_position;	// vertex position as a homogenous vector in NDC 
 in vec3 a_colour; // vertex colour RGB
-in mat4 u_modelMatrix;
+
+uniform mat4 u_modelMatrix;
 
 out vec3 v_colour; // to fragment shader
 
@@ -10,8 +11,8 @@ void main() {
 	v_colour = a_colour;
 
 	// pad the vertex to a homogeneous 3D point
-	a_position = u_modelMatrix * a_position;
-    gl_Position = a_position;
+	vec4 transformedPos = u_modelMatrix * a_position;
+    gl_Position = transformedPos;
 
 }
 

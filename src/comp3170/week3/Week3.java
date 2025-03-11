@@ -49,6 +49,8 @@ public class Week3 implements IWindowListener {
 
 	@Override
 	public void draw() {
+		// update the scene
+		update();
 
         // clear the colour buffer
 		glClear(GL_COLOR_BUFFER_BIT);	
@@ -56,7 +58,21 @@ public class Week3 implements IWindowListener {
 		scene.draw();
 	    
 	}
-
+	
+	private static final float TRANSLATION_SPEED = 1;
+	private static final float ROTATION_SPEED = TAU / 6;
+	private long oldTime = 0;
+	private void update() {
+		
+		// calculate seconds since last frame
+		long time = System.currentTimeMillis();
+		float deltaTime = (time - oldTime) / 1000f;
+		oldTime = time;
+		// scale updates by deltaTime
+		object.translate(TRANSLATION_SPEED * deltaTime, 0);
+		object.rotate(ROTATION_SPEED * deltaTime);
+	}
+	
 	@Override
 	public void resize(int width, int height) {
 		this.width = width;

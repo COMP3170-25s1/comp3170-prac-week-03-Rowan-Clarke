@@ -80,7 +80,11 @@ public class Scene {
 			// @formatter:on
 
 		indexBuffer = GLBuffers.createIndexBuffer(indices);
-		matrix = translationMatrix(1,1, matrix);
+		matrix = new Matrix4f();
+		//matrix = translationMatrix(0.0f,0.0f, matrix);
+		//matrix = rotationMatrix(0, matrix);
+		matrix = scaleMatrix(0.5f, 0.5f, matrix);
+
 
 	}
 
