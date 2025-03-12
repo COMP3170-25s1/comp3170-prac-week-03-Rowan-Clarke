@@ -37,6 +37,9 @@ public class Plane {
 	private Matrix4f rotMatrix;
 	private Matrix4f transMatrix;
 	private Matrix4f scalMatrix;
+	
+	private final int NSQUARES = 10;
+	private Vector4f[] position;
 
 	public Plane(float x, float y) {
 
@@ -99,6 +102,11 @@ public class Plane {
 		
 		//modelMatrix.mul(rotMatrix).mul(transMatrix).mul(scalMatrix);
 		modelMatrix.mul(transMatrix).mul(rotMatrix).mul(scalMatrix);
+		
+		position = new Vector4f[NSQUARES];
+		for (int i = 0; i < NSQUARES; i++) {
+			position[i] = new Vector4f( i*0.1f, i*0.1f, 0, 1);
+		}
 	}
 	
 	private final float MOVEMENT_SPEED = 10.0f;
@@ -140,17 +148,28 @@ public class Plane {
 
 		
 	}
+	
+	
 
 	public void draw() {
 		
 		shader.enable();
 		// set the attributes
-		shader.setAttribute("a_position", vertexBuffer);
 		shader.setAttribute("a_colour", colourBuffer);
 		shader.setUniform("u_modelMatrix", modelMatrix);
-
+		
+		shader.setAttribute("a_position", vertexBuffer);
 		// draw using index buffer
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+		
+		for (int i = 0; i < NSQUARES; i++) {
+			// pass the position of the shape as a uniform
+			shader.setUniform("u_worldPos", position[i]); //THIS WILL BREAK AS IT HAS NO DATA
+			// draw the square
+			glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0);
+			
+		}
+		
 		
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0);
