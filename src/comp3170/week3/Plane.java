@@ -1,6 +1,7 @@
 package comp3170.week3;
 
 import static comp3170.Math.TAU;
+
 import static org.lwjgl.opengl.GL11.GL_FILL;
 import static org.lwjgl.opengl.GL11.GL_FRONT_AND_BACK;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
@@ -162,17 +163,27 @@ public class Plane {
 		// draw using index buffer
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 		
+		// pass the positions of every instance as an attribute
+		int positionBuffer = GLBuffers.createBuffer(position);
+		shader.setAttribute("a_worldPos", positionBuffer);
+		// tell OpenGL this attribute is instanced
+		glVertexAttribDivisor(shader.getAttribute("a_worldPos"), 1);
+		// draw all the instances at once
+		glDrawElementsInstanced(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0, NSQUARES);
+		
 		for (int i = 0; i < NSQUARES; i++) {
 			// pass the position of the shape as a uniform
-			shader.setUniform("u_worldPos", position[i]); //THIS WILL BREAK AS IT HAS NO DATA
+			shader.setUniform("u_worldPos", position[i]); 
+			
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			// draw the square
 			glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0);
 			
 		}
 		
 		
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0);
+		
+		//glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0);
 
 	}
 
