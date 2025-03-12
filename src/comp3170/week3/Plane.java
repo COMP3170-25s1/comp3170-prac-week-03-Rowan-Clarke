@@ -3,6 +3,7 @@ package comp3170.week3;
 import static comp3170.Math.TAU;
 
 import static org.lwjgl.opengl.GL11.GL_FILL;
+import static org.lwjgl.opengl.GL11.GL_FLOAT;
 import static org.lwjgl.opengl.GL11.GL_FRONT_AND_BACK;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
@@ -34,25 +35,63 @@ public class Plane {
 	private int[] indices;
 	private int indexBuffer;
 	
-	private Vector3f[] colours;
-	private int colourBuffer;
-
+	private Vector3f[] colour;
 	private Shader shader;
 	
 	private Matrix4f[] modelMatrixes;
-	private int modelMatrixBuffer;
-	//private Matrix4f rotMatrix;
-	//private Matrix4f transMatrix;
-	//private Matrix4f scalMatrix;
+	private Vector2f[] position;
+	private float[] angle;
+	private float[] scale;
+	
+	private int positionBuffer;
+	private int rotationBuffer;
+	private int scaleBuffer;
+	private int colourBuffer;
+	
+	private float[] velocity;
+	private int velocityBuffer;
 	
 	private int NPLANES = 10;
-	private Vector4f[] position;
 
 	public Plane(int nPlanes) {
 		this.NPLANES = nPlanes;
 
 		shader = ShaderLibrary.instance.compileShader(VERTEX_SHADER, FRAGMENT_SHADER);
 
+		// Make one copy of the mesh
+		makeMesh();
+
+		// One transform per instance
+		position = new Vector2f[NPLANES];
+		angle = new float[NPLANES];
+		scale = new float[NPLANES];
+		colour = new Vector3f[NPLANES];
+		
+		velocity = new float[NPLANES];
+
+		for (int i = 0; i < NPLANES; i++) {
+			float x = (float) Math.random() * 2 - 1;
+			float y = (float) Math.random() * 2 - 1;
+			position[i] = new Vector2f(x, y);
+			angle[i] = (float) Math.random() * 360;
+			scale[i] = 0.01f;
+			Color c = Color.getHSBColor((float) Math.random(), 1, 1);
+			colour[i] = new Vector3f(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f);
+			velocity[i] = (float) Math.random()*5;
+		}
+
+		// create buffers for all the matrices and colours
+		positionBuffer = GLBuffers.createBuffer(position);
+		rotationBuffer = GLBuffers.createBuffer(angle, GL_FLOAT);
+		scaleBuffer = GLBuffers.createBuffer(scale, GL_FLOAT);
+		colourBuffer = GLBuffers.createBuffer(colour);
+		
+		velocityBuffer = GLBuffers.createBuffer(velocity, GL_FLOAT);
+		
+
+	}
+	
+	private void makeMesh() {
 		// @formatter:off
 			//          (0,1)
 			//           /|\
@@ -75,9 +114,10 @@ public class Plane {
 			
 			// @formatter:on
 		vertexBuffer = GLBuffers.createBuffer(vertices);
-
+		
+		/*
 		// @formatter:off
-		colours = new Vector3f[] {
+		colour = new Vector3f[] {
 			new Vector3f(1,0,1),	// MAGENTA
 			new Vector3f(1,0,1),	// MAGENTA
 			new Vector3f(1,0,0),	// RED
@@ -85,7 +125,8 @@ public class Plane {
 		};
 			// @formatter:on
 
-		colourBuffer = GLBuffers.createBuffer(colours);
+		colourBuffer = GLBuffers.createBuffer(colour);
+		*/
 
 		// @formatter:off
 		indices = new int[] {  
@@ -95,66 +136,30 @@ public class Plane {
 		// @formatter:on
 
 		indexBuffer = GLBuffers.createIndexBuffer(indices);
-		
-		position = new Vector4f[NPLANES];
-		modelMatrixes = new Matrix4f[NPLANES];
-		for (int i = 0; i < NPLANES; i++) {
-			
-			Matrix4f modelMatrix = new Matrix4f();
-			Matrix4f transMatrix = new Matrix4f();
-			Matrix4f rotMatrix = new Matrix4f();
-			Matrix4f scalMatrix = new Matrix4f();
-			
-			modelMatrix.identity();
-			
-			//float x = (float) Math.random() * 2 - 1;
-			//float y = (float) Math.random() * 2 - 1;
-			float x = 0f;
-			float y = 0f;
-			translationMatrix(0, 0, transMatrix);
-			position[i] = new Vector4f(x, y, 0f, 1f);
-			rotationMatrix(TAU/3, rotMatrix);
-			scaleMatrix(0.1f,0.1f, scalMatrix);
-			
-			modelMatrix = transformWorld(modelMatrix, rotMatrix, scalMatrix, transMatrix);
-			
-			//modelMatrix.mul(transMatrix).mul(rotMatrix).mul(scalMatrix);
-			//TRS
-			modelMatrixes[i] = modelMatrix;
-			
-			//Color c = Color.getHSBColor((float) Math.random(), 1, 1);
-			//colour[i] = new Vector3f(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f);
-		}
-		modelMatrixBuffer = GLBuffers.createBuffer(modelMatrixes);
 	}
 	
 
 	
-	private final float MOVEMENT_SPEED = 10.0f;
-	private final float ROTATION_SPEED = TAU/4;
-	private final float SCALE_SPEED = 0f;
-	
-	public void update(float deltaTime) {
+	private static final Vector2f MOVEMENT_SPEED = new Vector2f(0.0f, 0.0f);
+	private static final float ROTATION_SPEED = TAU / 1.5f;
+	private static final float SCALE_SPEED = 1.0f;
+	private Vector2f movement = new Vector2f();
 
-		float movement = MOVEMENT_SPEED * deltaTime;
-		float rotation = ROTATION_SPEED * deltaTime;
-		float scale = (float) Math.pow(SCALE_SPEED, deltaTime);
-		
-		for (int i = 0; i < NPLANES; i++) {
-			Matrix4f modelMatrix = new Matrix4f();
-			Matrix4f transMatrix = new Matrix4f();
-			Matrix4f rotMatrix = new Matrix4f();
-			Matrix4f scalMatrix = new Matrix4f();
-			
-			translationMatrix(0.0f, movement, transMatrix);
-			rotationMatrix(rotation, rotMatrix);
-			scaleMatrix(scale, scale, scalMatrix);
-			
-			//modelMatrix = transformLocal(modelMatrix, rotMatrix, scalMatrix, transMatrix);
-			
-			modelMatrix.mul(rotMatrix).mul(transMatrix);
-			modelMatrixes[i] = modelMatrix;	
-		}	
+	public void update(float dt) {
+		// update all the squares
+		MOVEMENT_SPEED.mul(dt, movement); // movement = speed * dt
+
+		for (int i = 0; i < position.length; i++) {
+			position[i].add(movement);
+			angle[i] = (angle[i] + ROTATION_SPEED * dt) % TAU;
+			scale[i] = scale[i] * (float) Math.pow(SCALE_SPEED, dt);
+		}
+
+		// update the data in the buffers
+		GLBuffers.updateBuffer(positionBuffer, position);
+		GLBuffers.updateBuffer(rotationBuffer, angle, GL_FLOAT);
+		GLBuffers.updateBuffer(scaleBuffer, scale, GL_FLOAT);
+
 	}
 	
 	
@@ -162,24 +167,37 @@ public class Plane {
 	public void draw() {
 		
 		shader.enable();
-		
-		// set the attributes
+
+		// pass in all the model matrices
+		shader.setAttribute("a_worldPos", positionBuffer);
+		glVertexAttribDivisor(shader.getAttribute("a_worldPos"), 1);
+
+		shader.setAttribute("a_rotation", rotationBuffer);
+		glVertexAttribDivisor(shader.getAttribute("a_rotation"), 1);
+
+		shader.setAttribute("a_scale", scaleBuffer);
+		glVertexAttribDivisor(shader.getAttribute("a_scale"), 1);
+
+		// write the colour value into the u_colour uniform
 		shader.setAttribute("a_colour", colourBuffer);
 		glVertexAttribDivisor(shader.getAttribute("a_colour"), 1);
 		
-		shader.setAttribute("a_modelMatrix", modelMatrixBuffer);
-		glVertexAttribDivisor(shader.getAttribute("a_modelMatrix"), 1);
-		
-		// pass the positions of every instance as an attribute
-		int positionBuffer = GLBuffers.createBuffer(position);
-		// tell OpenGL this attribute is instanced
+		shader.setAttribute("a_velocity", velocityBuffer);
+		glVertexAttribDivisor(shader.getAttribute("a_velocity"), 1);
 
-		shader.setAttribute("a_position", positionBuffer);
-		glVertexAttribDivisor(shader.getAttribute("a_position"), 1);
-		
-		// draw all the instances at once
+		// connect the vertex buffer to the a_position attribute
+		shader.setAttribute("a_position", vertexBuffer);
+
+		// draw using an index buffer
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 		glDrawElementsInstanced(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0, NPLANES);
+
+		// set back to non-instance based drawing
+		glVertexAttribDivisor(shader.getAttribute("a_worldPos"), 0);
+		glVertexAttribDivisor(shader.getAttribute("a_rotation"), 0);
+		glVertexAttribDivisor(shader.getAttribute("a_scale"), 0);
+		glVertexAttribDivisor(shader.getAttribute("a_colour"), 0);
+		glVertexAttribDivisor(shader.getAttribute("a_velocity"), 0);
 		
 	}
 
