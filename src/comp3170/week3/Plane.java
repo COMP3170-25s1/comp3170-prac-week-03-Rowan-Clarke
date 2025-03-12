@@ -10,8 +10,13 @@ import static org.lwjgl.opengl.GL15.GL_ELEMENT_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL11.glDrawElements;
 import static org.lwjgl.opengl.GL11.glPolygonMode;
 import static org.lwjgl.opengl.GL15.glBindBuffer;
+import static org.lwjgl.opengl.GL31.glDrawElementsInstanced;
+import static org.lwjgl.opengl.GL33.glVertexAttribDivisor;
+
+import java.awt.Color;
 
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -34,15 +39,16 @@ public class Plane {
 
 	private Shader shader;
 	
-	private Matrix4f modelMatrix;
-	private Matrix4f rotMatrix;
-	private Matrix4f transMatrix;
-	private Matrix4f scalMatrix;
+	private Matrix4f[] modelMatrixBuffer;
+	//private Matrix4f rotMatrix;
+	//private Matrix4f transMatrix;
+	//private Matrix4f scalMatrix;
 	
-	private final int NSQUARES = 10;
+	private int NPLANES = 10;
 	private Vector4f[] position;
 
-	public Plane(float x, float y) {
+	public Plane(int nPlanes) {
+		this.NPLANES = nPlanes;
 
 		shader = ShaderLibrary.instance.compileShader(VERTEX_SHADER, FRAGMENT_SHADER);
 
@@ -90,22 +96,33 @@ public class Plane {
 		indexBuffer = GLBuffers.createIndexBuffer(indices);
 		
 		
-		modelMatrix = new Matrix4f();
-		transMatrix = new Matrix4f();
-		rotMatrix = new Matrix4f();
-		scalMatrix = new Matrix4f();
+		for (int i = 0; i < NPLANES; i++) {
+			
+			Matrix4f modelMatrix = new Matrix4f();
+			Matrix4f transMatrix = new Matrix4f();
+			Matrix4f rotMatrix = new Matrix4f();
+			Matrix4f scalMatrix = new Matrix4f();
+			
+			modelMatrix.identity();
+			
+			float x = (float) Math.random() * 2 - 1;
+			float y = (float) Math.random() * 2 - 1;
+			translationMatrix(x, y, transMatrix);
+			rotationMatrix(TAU/3, rotMatrix);
+			scaleMatrix(0.1f,0.1f, scalMatrix);
+			
+			modelMatrix.mul(transMatrix).mul(rotMatrix).mul(scalMatrix);
+			modelMatrixBuffer[i] = modelMatrix;
+			
+			//Color c = Color.getHSBColor((float) Math.random(), 1, 1);
+			//colour[i] = new Vector3f(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f);
+		}
 		
-		modelMatrix.identity();
 		
-		translationMatrix(x, y, transMatrix);
-		rotationMatrix(TAU/3, rotMatrix);
-		scaleMatrix(0.1f,0.1f, scalMatrix);
 		
-		//modelMatrix.mul(rotMatrix).mul(transMatrix).mul(scalMatrix);
-		modelMatrix.mul(transMatrix).mul(rotMatrix).mul(scalMatrix);
-		
-		position = new Vector4f[NSQUARES];
-		for (int i = 0; i < NSQUARES; i++) {
+		position = new Vector4f[NPLANES];
+		for (int i = 0; i < NPLANES; i++) {
+			position[i] = new Vector4f( i*0.1f, i*0.1f, 0, 1);
 			position[i] = new Vector4f( i*0.1f, i*0.1f, 0, 1);
 		}
 	}
@@ -120,32 +137,22 @@ public class Plane {
 		float rotation = ROTATION_SPEED * deltaTime;
 		float scale = (float) Math.pow(SCALE_SPEED, deltaTime);
 		
-//		Using built in methods:
-//		modelMatrix.identity();	// M = I	
-//		modelMatrix.translate(movement, 0.0f, 0.0f); // M = M * T
-//		modelMatrix.rotateZ(rotation); // M = M * R
-//		modelMatrix.scale(scale); // M = M * S
+		for (int i = 0; i < NPLANES; i++) {
+			Matrix4f modelMatrix = new Matrix4f();
+			Matrix4f transMatrix = new Matrix4f();
+			Matrix4f rotMatrix = new Matrix4f();
+			Matrix4f scalMatrix = new Matrix4f();
+			
+			translationMatrix(0.0f, movement, transMatrix);
+			rotationMatrix(rotation, rotMatrix);
+			scaleMatrix(scale, scale, scalMatrix);
+			
+			modelMatrix.mul(rotMatrix).mul(transMatrix);
+			modelMatrixBuffer[i] = modelMatrix;
 		
-//		Using our methods:
-//		translationMatrix(movement, 0.0f, transMatrix);
-//		rotationMatrix(rotation, rotMatrix);
-//		modelMatrix.mul(transMatrix).mul(rotMatrix); // M = M*T*R
+		}
 		
-//		modelMatrix.mulLocal(transMatrix).mul(rotMatrix); // M = T*M*R
 		
-		translationMatrix(0.0f, movement, transMatrix);
-		rotationMatrix(rotation, rotMatrix);
-		scaleMatrix(scale, scale, scalMatrix);
-		
-		//modelMatrix.mul(transMatrix).mul(rotMatrix); // M = M*T*R
-		//M = R * S * T (local coordinates)
-		//M = T * R * S (global coordinates)
-		
-		//modelMatrix.mul(rotMatrix).mul(transMatrix).mul(scalMatrix);
-		modelMatrix.mul(rotMatrix).mul(transMatrix);
-
-		
-		//modelMatrix.mul(rotMatrix).mul(scalMatrix).mul(transMatrix); // M = M*T*R
 
 		
 	}
@@ -155,13 +162,15 @@ public class Plane {
 	public void draw() {
 		
 		shader.enable();
+		
 		// set the attributes
 		shader.setAttribute("a_colour", colourBuffer);
-		shader.setUniform("u_modelMatrix", modelMatrix);
+		glVertexAttribDivisor(shader.getAttribute("a_colour"), 1);
 		
 		shader.setAttribute("a_position", vertexBuffer);
-		// draw using index buffer
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+		glVertexAttribDivisor(shader.getAttribute("a_position"), 1);
+		
+		shader.setUniform("u_modelMatrix", modelMatrix);
 		
 		// pass the positions of every instance as an attribute
 		int positionBuffer = GLBuffers.createBuffer(position);
@@ -169,22 +178,8 @@ public class Plane {
 		// tell OpenGL this attribute is instanced
 		glVertexAttribDivisor(shader.getAttribute("a_worldPos"), 1);
 		// draw all the instances at once
-		glDrawElementsInstanced(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0, NSQUARES);
+		glDrawElementsInstanced(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0, NPLANES);
 		
-		for (int i = 0; i < NSQUARES; i++) {
-			// pass the position of the shape as a uniform
-			shader.setUniform("u_worldPos", position[i]); 
-			
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			// draw the square
-			glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0);
-			
-		}
-		
-		
-		
-		//glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0);
-
 	}
 
 	/**

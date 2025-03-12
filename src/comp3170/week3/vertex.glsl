@@ -13,7 +13,7 @@ void main() {
 
 	// pad the vertex to a homogeneous 3D point
 	vec4 transformedPos = a_position + a_worldPos;
-	vec4 transformedPos = u_modelMatrix * transformedPos;
+	transformedPos = u_modelMatrix * transformedPos;
     gl_Position = transformedPos;
 
 }
