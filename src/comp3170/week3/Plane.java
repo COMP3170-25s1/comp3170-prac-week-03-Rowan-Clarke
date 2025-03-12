@@ -77,7 +77,7 @@ public class Plane {
 			scale[i] = 0.01f;
 			Color c = Color.getHSBColor((float) Math.random(), 1, 1);
 			colour[i] = new Vector3f(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f);
-			velocity[i] = (float) Math.random()*5;
+			velocity[i] = (float) Math.random()*5+1;
 		}
 
 		// create buffers for all the matrices and colours

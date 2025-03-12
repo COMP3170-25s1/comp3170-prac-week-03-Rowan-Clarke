@@ -43,7 +43,7 @@ public class Week3 implements IWindowListener {
 		
 		new ShaderLibrary(DIRECTORY);
 		// set the background colour to white
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);	
+		glClearColor(0.0f, 0.1f, 0.1f, 1.0f);	
 		
 		// create the scene
 		scene = new Scene();
