@@ -4,11 +4,11 @@ import comp3170.week3.Plane;
 
 public class Scene {
 	
-	private Plane plane;
+	private Jetplane plane;
 	
 	public Scene() {
 		
-		plane = new Plane(5000);
+		plane = new Jetplane(1000);
 	}
 	
 	public void init() {
