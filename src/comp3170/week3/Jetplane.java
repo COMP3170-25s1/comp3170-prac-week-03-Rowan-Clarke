@@ -51,6 +51,9 @@ public class Jetplane {
 	private float[] velocity;
 	private int velocityBuffer;
 	
+	private float[] rotSpeed;
+
+	
 	private int NPLANES = 10;
 
 	public Jetplane(int nPlanes) {
@@ -68,16 +71,25 @@ public class Jetplane {
 		colour = new Vector3f[NPLANES];
 		
 		velocity = new float[NPLANES];
+		rotSpeed = new float[NPLANES];
+
 
 		for (int i = 0; i < NPLANES; i++) {
 			float x = (float) Math.random() * 2 - 1;
 			float y = (float) Math.random() * 2 - 1;
 			position[i] = new Vector2f(x, y);
-			angle[i] = (float) Math.random() * 360;
+			angle[i] = (float) Math.random() * TAU;
 			scale[i] = 0.05f;
 			Color c = Color.getHSBColor((float) Math.random(), 1, 1);
 			colour[i] = new Vector3f(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f);
-			velocity[i] = (float) Math.random()*5+1;
+			rotSpeed[i] = ((float) Math.random()*2-1) * TAU;
+			velocity[i] = (float) Math.random()*3+2;
+			if (rotSpeed[i] < 0) {
+				velocity[i] *= -1;
+			}
+			
+			
+			
 			//velocity[i] = 0;
 			
 		}
@@ -195,7 +207,7 @@ public class Jetplane {
 
 		for (int i = 0; i < position.length; i++) {
 			position[i].add(movement);
-			angle[i] = (angle[i] + ROTATION_SPEED * dt) % TAU;
+			angle[i] = (angle[i] + rotSpeed[i] * dt) % TAU;
 			scale[i] = scale[i] * (float) Math.pow(SCALE_SPEED, dt);
 		}
 

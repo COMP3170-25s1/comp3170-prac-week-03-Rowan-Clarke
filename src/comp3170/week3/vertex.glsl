@@ -24,7 +24,7 @@ void main() {
 	mat4 velocity = mat4(1,0,0,0, 0,1,0,0, 0,0,1,0, a_velocity,0,0,1); 
 	
 
-	mat4 modelMatrix = translation * rotation * scale * velocity;
+	mat4 modelMatrix = translation * scale * rotation * velocity;
 	
 	
 	//mat4 modelMatrix = rotation * scale * translation;
