@@ -56,7 +56,7 @@ public class Jetplane {
 	
 	private int NPLANES = 10;
 
-	public Jetplane(int nPlanes, float scaleSize) {
+	public Jetplane(int nPlanes, float scaleSize, float speed) {
 		this.NPLANES = nPlanes;
 
 		shader = ShaderLibrary.instance.compileShader(VERTEX_SHADER, FRAGMENT_SHADER);
@@ -83,9 +83,11 @@ public class Jetplane {
 			Color c = Color.getHSBColor((float) Math.random(), 1, 1);
 			colour[i] = new Vector3f(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f);
 			rotSpeed[i] = ((float) Math.random()*2-1) * TAU;
-			velocity[i] = (float) Math.random()*3+2;
+			velocity[i] = (float) Math.random()*speed+3;
 			if (rotSpeed[i] < 0) {
 				scale[i].y += -2*scaleSize;
+				//scale[i].y += -2*1;
+
 			}
 			
 			
@@ -111,8 +113,8 @@ public class Jetplane {
 			new Vector4f( .1f, .9f, 0, 1), //P1
 			new Vector4f( .2f, .7f, 0, 1), //P2
 			new Vector4f( .2f, .5f, 0, 1), //P3
-			new Vector4f( 1.2f, .3f, 0, 1), //P4
-			new Vector4f( 1.2f, .2f, 0, 1), //P5
+			new Vector4f( 1.3f, .3f, 0, 1), //P4
+			new Vector4f( 1.3f, .2f, 0, 1), //P5
 			new Vector4f( .2f, .2f, 0, 1), //P6
 			new Vector4f( .2f, .1f, 0, 1), //P7
 			new Vector4f( .1f, -.6f, 0, 1), //P8
@@ -126,8 +128,8 @@ public class Jetplane {
 			new Vector4f( -.1f, -.6f, 0, 1), //P16
 			new Vector4f( -.2f, .1f, 0, 1), //P17
 			new Vector4f( -.2f, .2f, 0, 1), //P18
-			new Vector4f( -1.2f, .2f, 0, 1), //P19
-			new Vector4f( -1.2f, .3f, 0, 1), //P20
+			new Vector4f( -1.3f, .2f, 0, 1), //P19
+			new Vector4f( -1.3f, .3f, 0, 1), //P20
 			new Vector4f( -.2f, .5f, 0, 1), //P21
 			new Vector4f( -.2f, .7f, 0, 1), //P22
 			new Vector4f( -.1f, .9f, 0, 1), //P23
