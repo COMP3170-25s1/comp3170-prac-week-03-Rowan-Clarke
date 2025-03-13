@@ -41,7 +41,7 @@ public class Jetplane {
 	private Matrix4f[] modelMatrixes;
 	private Vector2f[] position;
 	private float[] angle;
-	private float[] scale;
+	private Vector2f[] scale;
 	
 	private int positionBuffer;
 	private int rotationBuffer;
@@ -67,7 +67,7 @@ public class Jetplane {
 		// One transform per instance
 		position = new Vector2f[NPLANES];
 		angle = new float[NPLANES];
-		scale = new float[NPLANES];
+		scale = new Vector2f[NPLANES];
 		colour = new Vector3f[NPLANES];
 		
 		velocity = new float[NPLANES];
@@ -79,14 +79,14 @@ public class Jetplane {
 			float y = (float) Math.random() * 2 - 1;
 			position[i] = new Vector2f(x, y);
 			angle[i] = (float) Math.random() * TAU;
-			scale[i] = 0.05f;
+			scale[i] = new Vector2f(0.05f, 0.05f);
 			Color c = Color.getHSBColor((float) Math.random(), 1, 1);
 			colour[i] = new Vector3f(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f);
 			rotSpeed[i] = ((float) Math.random()*2-1) * TAU;
 			velocity[i] = (float) Math.random()*3+2;
-			if (rotSpeed[i] < 0) {
-				velocity[i] *= -1;
-			}
+			//if (rotSpeed[i] < 0) {
+			//	velocity[i] *= -1;
+			//}
 			
 			
 			
@@ -97,7 +97,7 @@ public class Jetplane {
 		// create buffers for all the matrices and colours
 		positionBuffer = GLBuffers.createBuffer(position);
 		rotationBuffer = GLBuffers.createBuffer(angle, GL_FLOAT);
-		scaleBuffer = GLBuffers.createBuffer(scale, GL_FLOAT);
+		scaleBuffer = GLBuffers.createBuffer(scale);
 		colourBuffer = GLBuffers.createBuffer(colour);
 		
 		velocityBuffer = GLBuffers.createBuffer(velocity, GL_FLOAT);
@@ -208,13 +208,15 @@ public class Jetplane {
 		for (int i = 0; i < position.length; i++) {
 			position[i].add(movement);
 			angle[i] = (angle[i] + rotSpeed[i] * dt) % TAU;
-			scale[i] = scale[i] * (float) Math.pow(SCALE_SPEED, dt);
+			scale[i].x = scale[i].x * (float) Math.pow(SCALE_SPEED, dt);
+			scale[i].y = scale[i].y * (float) Math.pow(SCALE_SPEED, dt);
+
 		}
 
 		// update the data in the buffers
 		GLBuffers.updateBuffer(positionBuffer, position);
 		GLBuffers.updateBuffer(rotationBuffer, angle, GL_FLOAT);
-		GLBuffers.updateBuffer(scaleBuffer, scale, GL_FLOAT);
+		GLBuffers.updateBuffer(scaleBuffer, scale);
 
 	}
 	
