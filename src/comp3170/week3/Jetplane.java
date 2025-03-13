@@ -56,7 +56,7 @@ public class Jetplane {
 	
 	private int NPLANES = 10;
 
-	public Jetplane(int nPlanes) {
+	public Jetplane(int nPlanes, float scaleSize) {
 		this.NPLANES = nPlanes;
 
 		shader = ShaderLibrary.instance.compileShader(VERTEX_SHADER, FRAGMENT_SHADER);
@@ -79,14 +79,14 @@ public class Jetplane {
 			float y = (float) Math.random() * 2 - 1;
 			position[i] = new Vector2f(x, y);
 			angle[i] = (float) Math.random() * TAU;
-			scale[i] = new Vector2f(0.05f, 0.05f);
+			scale[i] = new Vector2f(scaleSize, scaleSize);
 			Color c = Color.getHSBColor((float) Math.random(), 1, 1);
 			colour[i] = new Vector3f(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f);
 			rotSpeed[i] = ((float) Math.random()*2-1) * TAU;
 			velocity[i] = (float) Math.random()*3+2;
-			//if (rotSpeed[i] < 0) {
-			//	velocity[i] *= -1;
-			//}
+			if (rotSpeed[i] < 0) {
+				scale[i].y += -2*scaleSize;
+			}
 			
 			
 			
